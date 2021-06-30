@@ -40,8 +40,13 @@ public class DragView extends FrameLayout {
 
     private final float DEFAULT_MIN_SCALE = 0.7f;
     //在y轴上的最大平移
+    /**
+     *         MAX_TRANSLATE_Y = screenHeight/6;
+     *         MAX_Y = screenHeight-screenHeight/8;
+     */
     private int MAX_TRANSLATE_Y = 0;
     private int MAX_Y = 0;
+
 
     private final long DEFAULT_DURATION = 300;
     long animationDuration = DEFAULT_DURATION;
@@ -67,6 +72,7 @@ public class DragView extends FrameLayout {
     float releaseY = 0;
     int releaseWidth = 0;
     int releaseHeight = 0;
+    //图片正常宽高
     int realWidth;
     int realHeight;
 
@@ -218,13 +224,22 @@ public class DragView extends FrameLayout {
                     mDragListener.onDrag(this, mTranslateX, mTranslateY);
                 }
                 isDrag = true;
-                int dy = y - mLastY;
-                int newMarY = marginViewBean.getMarginTop() + dy;
 
                 //根据移动距离和屏幕的比例来更改背景透明度
                 float alphaChangePercent = mTranslateY / screenHeight;
                 //往上不透明
                 mAlpha = 1 - alphaChangePercent;
+
+                //拖动距离
+                int dy = y - mLastY;
+                int newMarY = marginViewBean.getMarginTop() + dy;
+                /*
+                Log.d("mLastY", "dispatchTouchEvent: "+mLastY);
+                Log.d("y", "dispatchTouchEvent: "+y);
+                Log.d("moveY", "dispatchTouchEvent: "+moveY);
+                Log.d("getMarginTop()", "dispatchTouchEvent: "+marginViewBean.getMarginTop());
+
+                 */
                 dragAnd2Normal(newMarY, true);
                 break;
             case MotionEvent.ACTION_UP:
@@ -233,7 +248,6 @@ public class DragView extends FrameLayout {
                 }
                 //如果滑动距离不足,则不需要事件
                 if (Math.abs(mYDistanceTraveled) < touchSlop || (Math.abs(mYDistanceTraveled) > Math.abs(mYDistanceTraveled) && !isDrag)) {
-                    Log.d("TAG", "dispatchTouchEvent: noenough");
                     if (!isMultiFinger && onClickListener != null) {
                         onClickListener.onClick(DragView.this);
                     }
@@ -249,6 +263,7 @@ public class DragView extends FrameLayout {
                     break;
                 }
                 isMultiFinger = false;
+                //滑动距离足够
                 if (mTranslateY > MAX_TRANSLATE_Y) {
                     //缩略图
                     backToMin();
@@ -307,12 +322,14 @@ public class DragView extends FrameLayout {
         marginViewBean.setMarginLeft(Math.round(left + originLeftOffset));
         marginViewBean.setMarginTop((int) (currentY));
     }
-    //显示缩略图
+    //显示大图
     private void backToNormal() {
 
         isAnimating = true;
         releaseLeft = marginViewBean.getMarginLeft() - (screenWidth - targetImageWidth) / 2;
         releaseY = marginViewBean.getMarginTop();
+
+        //动画过渡
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(marginViewBean.getMarginTop(), targetImageTop);
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -336,6 +353,7 @@ public class DragView extends FrameLayout {
 
 
 
+    //缩略图界面
     public void backToMin(){
         if(isAnimating){
             return;
@@ -387,6 +405,7 @@ public class DragView extends FrameLayout {
                 changeImageViewToCenterCrop();
             }
         }
+        //动画过渡到原来的位置
         if(errorImage){
             changeImageViewToCenterCrop();
             ValueAnimator valueAnimator = ValueAnimator.ofFloat(releaseY, mOriginTop);
@@ -406,36 +425,7 @@ public class DragView extends FrameLayout {
         changeBackgroundViewAlpha(true);
     }
 
-    void min2NormalAndDrag2Min(float currentY, float startY, float endY, float startLeft, float endLeft,
-                               float startWidth, float endWidth, float startHeight, float endHeight) {
-        min2NormalAndDrag2Min(false, currentY, startY, endY, startLeft, endLeft, startWidth, endWidth, startHeight, endHeight);
-    }
 
-    void min2NormalAndDrag2Min(float endY, float endLeft, float endWidth, float endHeight) {
-        min2NormalAndDrag2Min(true, 0, 0, endY, 0, endLeft, 0, endWidth, 0, endHeight);
-    }
-
-    void min2NormalAndDrag2Min(boolean showImmediately, float currentY, float startY, float endY, float startLeft, float endLeft,
-                               float startWidth, float endWidth, float startHeight, float endHeight) {
-        if (endY == startY) {
-            return;
-        }
-        if (showImmediately) {
-            marginViewBean.setWidth(endWidth);
-            marginViewBean.setHeight(endHeight);
-            marginViewBean.setMarginLeft((int) (endLeft));
-            marginViewBean.setMarginTop((int) endY);
-            return;
-        }
-        float yPercent = (currentY - startY) / (endY - startY);
-        float xOffset = yPercent * (endLeft - startLeft);
-        float widthOffset = yPercent * (endWidth - startWidth);
-        float heightOffset = yPercent * (endHeight - startHeight);
-        marginViewBean.setWidth(startWidth + widthOffset);
-        marginViewBean.setHeight(startHeight + heightOffset);
-        marginViewBean.setMarginLeft((int) (startLeft + xOffset));
-        marginViewBean.setMarginTop((int) currentY);
-    }
     private void changeImageViewToCenterCrop() {
 
         if (getContentView() instanceof SketchImageView) {
@@ -443,6 +433,10 @@ public class DragView extends FrameLayout {
             ((SketchImageView) getContentView()).setScaleType(ImageView.ScaleType.CENTER_CROP);
         }
     }
+    /**
+     *
+     * @param isToZero 是否透明
+     */
     private void changeBackgroundViewAlpha(final boolean isToZero){
         final float end = isToZero ?0:1f;
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(mAlpha,end);
@@ -481,6 +475,8 @@ public class DragView extends FrameLayout {
         mOriginWidth = originWidth;
         mOriginHeight = originHeight;
     }
+
+
     public void show(boolean show){
         setVisibility(View.VISIBLE);
         mAlpha = show ? 1:0;
@@ -538,21 +534,24 @@ public class DragView extends FrameLayout {
         }
     }
 
-
+    //图片大小
     public void notifySize(int width,int height){
         notifySize(width,height,false);
     }
-    public void notifySize(int width,int height,boolean show){
+    public void notifySize(int width,int height,boolean showRightNow){
         realWidth = width;
         realHeight = height;
         if(realWidth == 0 || realHeight == 0)
             return;
+
         int newWidth;
         int newHeight;
         ImageSizeCalculator imageSizeCalculator = new ImageSizeCalculator();
+        //根据高度计算是否可以使用阅读模式
         if(imageSizeCalculator.canUseReadModeByHeight(realWidth,realHeight) ||
             imageSizeCalculator.canUseReadModeByWidth(realWidth,realHeight) ||
             screenWidth/(float) screenHeight < realWidth/(float)realHeight){
+
 
             isLongHeightImage = imageSizeCalculator.canUseReadModeByHeight(realWidth,realHeight)
                     && getContentView() instanceof SketchImageView;
@@ -573,7 +572,7 @@ public class DragView extends FrameLayout {
         final int endHeight = newHeight;
         final int endWidth = newWidth;
 
-        if(show){
+        if(showRightNow){
             targetImageHeight = endHeight;
             targetImageWidth = endWidth;
             targetImageTop = (screenHeight - targetImageHeight) / 2;
@@ -588,7 +587,7 @@ public class DragView extends FrameLayout {
             return;
         }
 
-        //动画
+        //动画 过渡 补全图片
         ValueAnimator animator = ValueAnimator.ofInt(targetImageTop, (screenHeight - endHeight) / 2);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -618,6 +617,36 @@ public class DragView extends FrameLayout {
         animator.start();
 
     }
+    void min2NormalAndDrag2Min(float currentY, float startY, float endY, float startLeft, float endLeft,
+                               float startWidth, float endWidth, float startHeight, float endHeight) {
+        min2NormalAndDrag2Min(false, currentY, startY, endY, startLeft, endLeft, startWidth, endWidth, startHeight, endHeight);
+    }
+
+    void min2NormalAndDrag2Min(float endY, float endLeft, float endWidth, float endHeight) {
+        min2NormalAndDrag2Min(true, 0, 0, endY, 0, endLeft, 0, endWidth, 0, endHeight);
+    }
+
+    void min2NormalAndDrag2Min(boolean showImmediately, float currentY, float startY, float endY, float startLeft, float endLeft,
+                               float startWidth, float endWidth, float startHeight, float endHeight) {
+        if (endY == startY) {
+            return;
+        }
+        if (showImmediately) {
+            marginViewBean.setWidth(endWidth);
+            marginViewBean.setHeight(endHeight);
+            marginViewBean.setMarginLeft((int) (endLeft));
+            marginViewBean.setMarginTop((int) endY);
+            return;
+        }
+        float yPercent = (currentY - startY) / (endY - startY);
+        float xOffset = yPercent * (endLeft - startLeft);
+        float widthOffset = yPercent * (endWidth - startWidth);
+        float heightOffset = yPercent * (endHeight - startHeight);
+        marginViewBean.setWidth(startWidth + widthOffset);
+        marginViewBean.setHeight(startHeight + heightOffset);
+        marginViewBean.setMarginLeft((int) (startLeft + xOffset));
+        marginViewBean.setMarginTop((int) currentY);
+    }
 
     private void setImageDataOfAnimatorEnd() {
         imageLeftOfAnimatorEnd = marginViewBean.getMarginLeft();
@@ -640,6 +669,8 @@ public class DragView extends FrameLayout {
             ((SketchImageView) getContentView()).setScaleType(ImageView.ScaleType.FIT_CENTER);
         }
     }
+
+    /////
     /**
      * 获取可滑动view中添加 的子view
      * @return

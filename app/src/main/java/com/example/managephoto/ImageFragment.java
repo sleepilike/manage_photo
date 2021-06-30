@@ -232,17 +232,19 @@ public class ImageFragment extends Fragment {
         sketchImageView.displayImage(url);
 
     }
-
     private void loadWithoutCache(){
         loadRequest = Sketch.with(getContext()).load(url, new LoadListener() {
+            //开始加载
             @Override
             public void onStarted() {
+                //加载时显示加载进度
                 loadingLayout.setVisibility(View.VISIBLE);
                 if (ImageActivity.iProgress != null) {
                     ImageActivity.iProgress.onStart(position);
                 }
             }
 
+            //加载完成
             @Override
             public void onCompleted(@NonNull LoadResult result) {
                 loadingLayout.setVisibility(View.GONE);
@@ -274,6 +276,7 @@ public class ImageFragment extends Fragment {
             public void onCanceled(@NonNull CancelCause cause) {
             }
         }).downloadProgressListener(new DownloadProgressListener() {
+            //下载进度监听器
             @Override
             public void onUpdateDownloadProgress(int totalLength, int completedLength) {
                 loadingLayout.setVisibility(View.VISIBLE);
