@@ -1,4 +1,4 @@
-package com.example.managephoto.interfaces;
+package com.example.managephoto.view;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -20,15 +20,17 @@ import androidx.viewpager.widget.ViewPager;
 import com.example.managephoto.R;
 
 
-//图片下标指示导航栏
+//图片下标指示导航栏 动画
 //图片数量 当前图片位置
 public class CircleIndicator extends LinearLayout {
 
+    //圆圈的大小
     private final static int DEFAULT_INDICATOR_WIDTH = 3;
 
     private ViewPager mViewpager;
     private GradientDrawable mIndicatorBackground;
 
+    //动画
     private Animator mAnimatorOut;
     private Animator mAnimatorIn;
     private Animator mImmediateAnimatorOut;
@@ -39,7 +41,9 @@ public class CircleIndicator extends LinearLayout {
     private int mIndicatorHeight = -1;
 
     private int mLastPosition = -1;
-    private final ViewPager.OnPageChangeListener mInternalPageChangeListener = new ViewPager.OnPageChangeListener() {
+
+    private final ViewPager.OnPageChangeListener mInternalPageChangeListener =
+            new ViewPager.OnPageChangeListener() {
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -150,16 +154,7 @@ public class CircleIndicator extends LinearLayout {
         typedArray.recycle();
     }
 
-    /**
-     * Create and configure Indicator in Java code.
-     */
-    public void configureIndicator(int indicatorWidth, int indicatorHeight, int indicatorMargin) {
-        mIndicatorWidth = indicatorWidth;
-        mIndicatorHeight = indicatorHeight;
-        mIndicatorMargin = indicatorMargin;
 
-        checkIndicatorConfig(getContext());
-    }
 
     private void checkIndicatorConfig(Context context) {
         mIndicatorWidth = (mIndicatorWidth < 0) ? dip2px(DEFAULT_INDICATOR_WIDTH) : mIndicatorWidth;

@@ -72,7 +72,7 @@ public class ReAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder > {
 
     class ViewHolder extends RecyclerView.ViewHolder{
 
-        //采用SketchImageView 加载gif
+        //采用SketchImageView
         SketchImageView srcImageView;
         public ViewHolder(@NonNull  View itemView) {
             super(itemView);

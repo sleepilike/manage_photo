@@ -20,7 +20,7 @@ import com.example.managephoto.view.NoScrollViewPager;
 
 import java.util.ArrayList;
 import java.util.List;
-
+//图片展示大图
 public class ImageActivity extends AppCompatActivity {
 
     private NoScrollViewPager viewPager;
@@ -38,13 +38,15 @@ public class ImageActivity extends AppCompatActivity {
         Intent intent = new Intent(activity,ImageActivity.class);
         intent.putExtra("config",oneImageBean);
         activity.startActivity(intent);
-        //动画
+        //切换动画
         activity.overridePendingTransition(0,0);
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //全屏显示 没有状态栏
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_image);
         init();
@@ -68,6 +70,7 @@ public class ImageActivity extends AppCompatActivity {
             );
             fragmentList.add(imageFragment);
         }
+
         viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
             @NonNull
             @Override
@@ -81,6 +84,7 @@ public class ImageActivity extends AppCompatActivity {
             }
         });
         viewPager.setCurrentItem(currentPos);
+
         if(iIndicator != null && contentViewOriginBeans.size() != 1){
             iIndicator.attach(indicatorLayout);
             iIndicator.onShow(viewPager);
@@ -108,7 +112,6 @@ public class ImageActivity extends AppCompatActivity {
         }
         OneImage.onLoadPhotoBeforeShowBigImageListener = null;
         OneImage.onShowToMaxFinishListener = null;
-        OneImage.onProvideViewListener = null;
         OneImage.onFinishListener = null;
         iIndicator = null;
         iProgress = null;

@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:visibility="visible"/>
 
+<!--    下标导航栏-->
     <FrameLayout
         android:id="@+id/indicatorLayout"
         android:layout_width="match_parent"

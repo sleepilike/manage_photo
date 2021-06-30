@@ -23,17 +23,23 @@ import com.example.managephoto.bean.MarginViewBean;
 import me.panpf.sketch.SketchImageView;
 import me.panpf.sketch.decode.ImageSizeCalculator;
 
+//图片拖动
+//内嵌SketchImageView
 public class DragView extends FrameLayout {
 
     private float mAlpha = 0;
+    //按下时的坐标
     private float mDownX;
     private float mDownY;
+    //拖动的总距离
     private float mYDistanceTraveled;
     private float mXDistanceTraveled;
+    //每次拖动时的移动距离
     private float mTranslateY;
     private float mTranslateX;
 
     private final float DEFAULT_MIN_SCALE = 0.7f;
+    //在y轴上的最大平移
     private int MAX_TRANSLATE_Y = 0;
     private int MAX_Y = 0;
 
@@ -44,12 +50,14 @@ public class DragView extends FrameLayout {
     private int mOriginHeight;
     private int mOriginWidth;
 
+    //屏幕宽高
     private int screenWidth;
     private int screenHeight;
     private int targetImageTop;
     private int targetImageWidth;
     private int targetImageHeight;
 
+    //上一次事件的y
     private int mLastY;
 
     int minWidth = 0;
@@ -61,6 +69,8 @@ public class DragView extends FrameLayout {
     int releaseHeight = 0;
     int realWidth;
     int realHeight;
+
+    //最小滑动距离
     int touchSlop = ViewConfiguration.getTouchSlop();
 
     int imageLeftOfAnimatorEnd = 0;
@@ -77,6 +87,7 @@ public class DragView extends FrameLayout {
     boolean isPhoto = false;
     private boolean errorImage = true;
 
+    //图片背景
     FrameLayout contentLayout;
     View backgroundView;
 
@@ -97,13 +108,43 @@ public class DragView extends FrameLayout {
         super(context, attrs, defStyleAttr);
         screenWidth = getResources().getDisplayMetrics().widthPixels;
         screenHeight = getResources().getDisplayMetrics().heightPixels;
+        Log.d("screenWidth", "DragView: "+screenWidth);
+        Log.d("screenHeight", "DragView: "+screenHeight);
         MAX_TRANSLATE_Y = screenHeight/6;
         MAX_Y = screenHeight-screenHeight/8;
+        Log.d("MAX_TRANSLATE_Y", "DragView: "+MAX_TRANSLATE_Y);
+        Log.d("MAX_Y", "DragView: "+MAX_Y);
 
         addView(LayoutInflater.from(getContext()).inflate(R.layout.content_item, null), 0);
         contentLayout = findViewById(R.id.contentLayout);
         backgroundView = findViewById(R.id.backgroundView);
         marginViewBean = new MarginViewBean(contentLayout);
+    }
+
+    //添加子view sketchView
+    public void addContentChildView(View view){
+        ViewGroup viewGroup = (ViewGroup) view.getParent();
+        if(viewGroup != null){
+            viewGroup.removeView(view);
+        }
+        if(view instanceof SketchImageView){
+            SketchImageView sketchImageView = (SketchImageView)view;
+            //sketchView 已实现放大缩小
+            if(sketchImageView.getZoomer() != null){
+                sketchImageView.getZoomer().setReadMode(true);
+                sketchImageView.setOnClickListener(new View.OnClickListener(){
+
+                    //单击退回原界面
+                    @Override
+                    public void onClick(View v) {
+                        backToMin();
+                    }
+                });
+            }
+            //正常缩放比例
+            sketchImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        }
+        contentLayout.addView(view);
     }
 
     @Override
@@ -129,6 +170,7 @@ public class DragView extends FrameLayout {
                 isMultiFinger = true;
                 break;
             case MotionEvent.ACTION_DOWN:
+
                 mDownX = event.getX();
                 mDownY = event.getY();
                 mTranslateX = 0;
@@ -146,7 +188,6 @@ public class DragView extends FrameLayout {
                 mTranslateY = moveY - mDownY;
                 mYDistanceTraveled += Math.abs(mTranslateY);
                 mXDistanceTraveled += Math.abs(mTranslateX);
-
                 if (isAnimating) {
                     break;
                 }
@@ -180,8 +221,9 @@ public class DragView extends FrameLayout {
                 int dy = y - mLastY;
                 int newMarY = marginViewBean.getMarginTop() + dy;
 
-                //根据触摸点的Y坐标和屏幕的比例来更改透明度
+                //根据移动距离和屏幕的比例来更改背景透明度
                 float alphaChangePercent = mTranslateY / screenHeight;
+                //往上不透明
                 mAlpha = 1 - alphaChangePercent;
                 dragAnd2Normal(newMarY, true);
                 break;
@@ -238,6 +280,7 @@ public class DragView extends FrameLayout {
         int bottom = top + v.getMeasuredHeight();
         return y>=top && y<=bottom && x>=left && x<=right;
     }
+
     //拖放 只能在y轴上
     void dragAnd2Normal(float currentY, boolean isDrag) {
         float nodeMarginPercent = (MAX_Y - currentY + targetImageTop) / MAX_Y;
@@ -292,30 +335,7 @@ public class DragView extends FrameLayout {
     }
 
 
-    public void addContentChildView(View view){
-        ViewGroup viewGroup = (ViewGroup) view.getParent();
-        if(viewGroup != null){
-            viewGroup.removeView(view);
-        }
-        if(view instanceof SketchImageView){
-            SketchImageView sketchImageView = (SketchImageView)view;
-            //缩放
-            if(sketchImageView.getZoomer() != null){
-                sketchImageView.getZoomer().setReadMode(true);
-                sketchImageView.setOnClickListener(new View.OnClickListener(){
 
-                    //单击退回原界面
-                    @Override
-                    public void onClick(View v) {
-                        backToMin();
-                    }
-                });
-            }
-            //正常缩放比例
-            sketchImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        }
-        contentLayout.addView(view);
-    }
     public void backToMin(){
         if(isAnimating){
             return;
@@ -648,14 +668,14 @@ public class DragView extends FrameLayout {
     }
 
 
+    public interface OnShowFinishListener {
+        void showFinish(DragView dragView, boolean showImmediately);
+    }
 
     public interface OnDragListener {
         void onDrag(DragView view, float moveX, float moveY);
     }
 
-    public interface OnShowFinishListener {
-        void showFinish(DragView dragView, boolean showImmediately);
-    }
     public interface OnFinishListener {
         void callFinish();
     }
@@ -675,9 +695,7 @@ public class DragView extends FrameLayout {
         this.onReleaseListener = onReleaseListener;
     }
 
-    public void setOnClickListener(OnClickListener onClickListener) {
-        this.onClickListener = onClickListener;
-    }
+
 
     public void setOnShowFinishListener(OnShowFinishListener onShowFinishListener) {
         this.onShowFinishListener = onShowFinishListener;

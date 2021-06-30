@@ -1,14 +1,16 @@
-package com.example.managephoto.interfaces;
+package com.example.managephoto.view;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.viewpager.widget.ViewPager;
 
+import com.example.managephoto.interfaces.IIndicator;
 import com.example.managephoto.utils.UIUtil;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -22,6 +24,7 @@ public class CircleIndexIndicator implements IIndicator {
     private int currentBottomMargin = originBottomMargin;
     @Override
     public void attach(FrameLayout parent) {
+        Log.d("CircleIndexIndicator", "attach: ");
         originBottomMargin = UIUtil.dipToPx(parent.getContext(),16);
         FrameLayout.LayoutParams indexLp = new FrameLayout.LayoutParams(WRAP_CONTENT, UIUtil.dipToPx(parent.getContext(), 36));
         indexLp.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
@@ -37,6 +40,7 @@ public class CircleIndexIndicator implements IIndicator {
     @Override
     public void onShow(ViewPager viewPager) {
 
+        Log.d("CircleIndexIndicator", "onShow: ");
         circleIndicator.setVisibility(View.VISIBLE);
         circleIndicator.setViewPager(viewPager);
     }
@@ -44,6 +48,8 @@ public class CircleIndexIndicator implements IIndicator {
     @Override
     public void move(float moveX, float moveY) {
 
+        //在y轴上移动
+        Log.d("CircleIndexIndicator", "move: ");
         if (circleIndicator == null) {
             return;
         }
@@ -59,6 +65,7 @@ public class CircleIndexIndicator implements IIndicator {
     @Override
     public void fingerRelease(boolean isToMax, boolean isToMin) {
 
+        Log.d("CircleIndexIndicator", "fingerRelease: ");
         if (circleIndicator == null) {
             return;
         }
@@ -81,12 +88,7 @@ public class CircleIndexIndicator implements IIndicator {
                 circleIndicator.setLayoutParams(indexLp);
             }
         });
-        valueAnimator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
 
-            }
-        });
         valueAnimator.setDuration(300).start();
     }
 }

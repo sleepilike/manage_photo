@@ -1,4 +1,4 @@
-package com.example.managephoto.interfaces;
+package com.example.managephoto.view;
 
 import android.content.Context;
 import android.util.Log;
@@ -7,6 +7,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.example.managephoto.interfaces.IProgress;
 import com.example.managephoto.view.LoadingView;
 
 

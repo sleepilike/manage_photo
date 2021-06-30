@@ -4,6 +4,7 @@ import android.widget.FrameLayout;
 
 import androidx.viewpager.widget.ViewPager;
 
+//图片下标指示器
 public interface IIndicator {
 
     void attach(FrameLayout parent);

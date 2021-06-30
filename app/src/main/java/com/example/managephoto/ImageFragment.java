@@ -2,6 +2,7 @@ package com.example.managephoto;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ import me.panpf.sketch.request.LoadRequest;
 import me.panpf.sketch.request.LoadResult;
 import me.panpf.sketch.util.SketchUtils;
 
+//图片显示 fragment 内嵌 dragview
 public class ImageFragment extends Fragment {
 
     DragView dragView;
@@ -40,6 +42,7 @@ public class ImageFragment extends Fragment {
     SketchImageView sketchImageView;
     int position;
     int type = OneImageBean.PHOTO;
+    //加载进度圈
     FrameLayout loadingLayout;
     boolean showAnimation = false;
     boolean hasCache;
@@ -74,6 +77,7 @@ public class ImageFragment extends Fragment {
             type = getArguments().getInt("type");
             contentViewOriginBean = getArguments().getParcelable("model");
         }
+
         loadingLayout = view.findViewById(R.id.loadingLayout);
         dragView = view.findViewById(R.id.dragView);
         dragView.setPhoto(type == OneImageBean.PHOTO);
@@ -88,7 +92,6 @@ public class ImageFragment extends Fragment {
         //手势放大缩小移动
         sketchImageView.setZoomEnabled(true);
         dragView.addContentChildView(sketchImageView);
-
         //使用setPause减少内存消耗 初始化分块显示器的暂停状态
         sketchImageView.getZoomer().getBlockDisplayer().setPause(!isVisibleToUser());
         return view;
@@ -99,6 +102,7 @@ public class ImageFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         if(getContext() == null || getActivity() == null)
             return;
+        //先显示缩略图 过渡
         if(OneImage.onLoadPhotoBeforeShowBigImageListener != null){
             if (dragView.getContentView() instanceof SketchImageView){
                 OneImage.onLoadPhotoBeforeShowBigImageListener.loadView((SketchImageView)dragView.getContentView(),position);
@@ -107,6 +111,7 @@ public class ImageFragment extends Fragment {
                 dragView.getContentParentView().getChildAt(1).setVisibility(View.VISIBLE);
             }
         }
+
         dragView.setOnShowFinishListener(new DragView.OnShowFinishListener() {
             @Override
             public void showFinish(DragView dragView, boolean showImmediately) {
@@ -115,9 +120,12 @@ public class ImageFragment extends Fragment {
                 }
             }
         });
+
+        //拖动
         dragView.setOnDragListener(new DragView.OnDragListener() {
             @Override
             public void onDrag(DragView view, float moveX, float moveY) {
+                Log.d("ImageActivity", "onDrag: 111");
                 if(ImageActivity.iIndicator != null){
                     ImageActivity.iIndicator.move(moveX,moveY);
                 }
@@ -283,6 +291,13 @@ public class ImageFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if(getUserVisibleHint()){
+            onUserVisibleChanged(true);
+        }
+    }
+    @Override
     public void onPause() {
         super.onPause();
         if(getUserVisibleHint()){
@@ -300,13 +315,7 @@ public class ImageFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if(getUserVisibleHint()){
-            onUserVisibleChanged(true);
-        }
-    }
+
 
     @Override
     public void onDestroyView() {

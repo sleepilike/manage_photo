@@ -35,9 +35,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void init(){
+        //列数
         spanCount = 3;
+
         immersionBar = ImmersionBar.with(this)
-                .statusBarColor(R.color.transparent)
+                .statusBarColor(R.color.black)
                 .fitsSystemWindows(true);//适配 不加会截断
         immersionBar.init();
 
@@ -46,6 +48,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         adapter = new ReAdapter(this,this);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,spanCount);
+        //设置布局管理器
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override

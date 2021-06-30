@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+
+//图片记载进度圈
 public class LoadingView extends View {
     private Paint mPaint1;
     private Paint mPaint2;
